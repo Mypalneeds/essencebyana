@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MentorConnect - Mentor Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+              --primary-green: #8db635;
+            --light-green: #d1fae5;
+            --dark-green: #8b9c1a;
+            --black: #111827;
+            --light-black: #1f2937;
+            --white: #ffffff;
+            --light-gray: #f9fafb;
+            --medium-gray: #6b7280;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-gray) 0%, var(--light-green) 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
+        /* 3D Card Effects */
+        .card-3d {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.05);
+            transform: translateY(0);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+        }
+
+        .card-3d:hover {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--black) !important;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            min-height: calc(100vh - 140px);
+        }
+
+        .sidebar-title {
+            color: var(--black);
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            color: var(--medium-gray);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link:hover {
+            background: var(--light-green);
+            color: var(--dark-green);
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: var(--white);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 12px;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Hero Section */
+        .hero-card {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: var(--white);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(50px, -50px);
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            border-left: 4px solid var(--primary-green);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--medium-gray);
+            font-weight: 500;
+        }
+
+        /* Mentee Cards */
+        .mentee-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .mentee-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-green);
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.2rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-green);
+            color: var(--primary-green);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-green);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Messages and Notifications */
+        .message-item, .notification-item {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--light-green);
+            transition: all 0.3s ease;
+        }
+
+        .message-item:hover, .notification-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-green);
+        }
+
+        .notification-item.unread {
+            border-left-color: var(--primary-green);
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        /* Form Controls */
+        .form-control, .form-select {
+            border: 2px solid rgba(16, 185, 129, 0.1);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+
+        /* Progress bars */
+        .progress {
+            border-radius: 10px;
+            background-color: var(--light-green);
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green)) !important;
+            border-radius: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-card {
+                padding: 2rem;
+            }
+            
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content, .sidebar {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Animation for page load */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <div class="brand-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                MentorConnect
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <div class="profile-avatar me-2" style="width: 35px; height: 35px; font-size: 0.9rem;">JS</div>
+                        <span class="fw-semibold text-dark">John Smith</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="border-radius: 16px;">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile Settings</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-question-circle me-2"></i>Help & Support</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 col-md-4 animate-in">
+                <div class="sidebar">
+                    <h6 class="sidebar-title">Mentor Dashboard</h6>
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="showSection(event, 'overview')">
+                            <i class="fas fa-home"></i>Overview
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection(event, 'profile')">
+                            <i class="fas fa-user"></i>Profile
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection(event, 'mentees')">
+                            <i class="fas fa-users"></i>My Mentees
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection(event, 'messages')">
+                            <i class="fas fa-comments"></i>Messages
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection(event, 'resources')">
+                            <i class="fas fa-book"></i>Resources
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection(event, 'notifications')">
+                            <i class="fas fa-bell"></i>Notifications
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8 animate-in">
+                <div class="main-content">
+                    <div id="content-area">
+                        <!-- Overview Section -->
+                        <div id="overview-section">
+                            <div class="hero-card">
+                                <h1 class="hero-title">Welcome back, John!</h1>
+                                <p class="hero-subtitle">Ready to inspire and guide your mentees to success? You have 3 active mentees and 2 new messages waiting.</p>
+                            </div>
+
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="stat-value">3</div>
+                                    <div class="stat-label">Active Mentees</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                    <div class="stat-value">24</div>
+                                    <div class="stat-label">Sessions Completed</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="stat-value">92%</div>
+                                    <div class="stat-label">Success Rate</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="stat-value">4.9</div>
+                                    <div class="stat-label">Average Rating</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3 text-dark">Recent Activity</h5>
+                                    <div class="message-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="profile-avatar me-3" style="width: 40px; height: 40px; font-size: 1rem;">SJ</div>
+                                            <div>
+                                                <h6 class="mb-1 text-dark">Sarah completed her project</h6>
+                                                <small class="text-muted">2 hours ago</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="message-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="profile-avatar me-3" style="width: 40px; height: 40px; font-size: 1rem;">AC</div>
+                                            <div>
+                                                <h6 class="mb-1 text-dark">Alex sent you a message</h6>
+                                                <small class="text-muted">5 hours ago</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3 text-dark">Upcoming Sessions</h5>
+                                    <div class="message-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 text-dark">Career Planning with Sarah</h6>
+                                                <small class="text-muted">Tomorrow at 2:00 PM</small>
+                                            </div>
+                                            <button class="btn btn-outline-primary btn-sm">Join</button>
+                                        </div>
+                                    </div>
+                                    <div class="message-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 text-dark">Skills Review with Alex</h6>
+                                                <small class="text-muted">Friday at 10:00 AM</small>
+                                            </div>
+                                            <button class="btn btn-outline-primary btn-sm">Join</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Section -->
+                        <div id="profile-section" class="d-none">
+                            <h2 class="fw-bold mb-4 text-dark">Profile Settings</h2>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="card-3d p-4">
+                                        <div class="d-flex align-items-center mb-4">
+                                            <div class="profile-avatar me-3" style="width: 80px; height: 80px; font-size: 2rem;">JS</div>
+                                            <div>
+                                                <h4 class="text-dark mb-1">John Smith</h4>
+                                                <p class="text-muted mb-0">Senior Software Engineer</p>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-outline-primary">Update Photo</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card-3d p-4">
+                                        <h5 class="text-dark mb-3">Contact Information</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Email</label>
+                                            <input type="email" class="form-control" value="john.smith@email.com" disabled>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Experience</label>
+                                            <select class="form-select">
+                                                <option>8+ Years</option>
+                                                <option>5-7 Years</option>
+                                                <option>3-5 Years</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card-3d p-4">
+                                        <h5 class="text-dark mb-3">Bio & Skills</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Biography</label>
+                                            <textarea class="form-control" rows="4" placeholder="Tell mentees about yourself...">Experienced software engineer with over 8 years in the tech industry. Passionate about mentoring and helping others grow their careers.</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Skills</label>
+                                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                                <span class="badge bg-success rounded-pill px-3 py-2">JavaScript</span>
+                                                <span class="badge bg-success rounded-pill px-3 py-2">Python</span>
+                                                <span class="badge bg-success rounded-pill px-3 py-2">React</span>
+                                                <span class="badge bg-success rounded-pill px-3 py-2">Leadership</span>
+                                                <span class="badge bg-success rounded-pill px-3 py-2">Career Coaching</span>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-primary">Save Changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mentees Section -->
+                        <div id="mentees-section" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2 class="fw-bold text-dark">My Mentees</h2>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Add Mentee
+                                </button>
+                            </div>
+                            
+                            <div id="mentees-list">
+                                <!-- Mentees will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Messages Section -->
+                        <div id="messages-section" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2 class="fw-bold text-dark">Messages</h2>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>New Message
+                                </button>
+                            </div>
+                            
+                            <div id="messages-list">
+                                <!-- Messages will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Resources Section -->
+                        <div id="resources-section" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2 class="fw-bold text-dark">Resources</h2>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-upload me-2"></i>Upload Resource
+                                </button>
+                            </div>
+                            
+                            <div id="resources-list">
+                                <!-- Resources will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Notifications Section -->
+                        <div id="notifications-section" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h2 class="fw-bold text-dark">Notifications</h2>
+                                <button class="btn btn-outline-primary" onclick="markAllAsRead()">Mark All as Read</button>
+                            </div>
+                            
+                            <div id="notifications-list">
+                                <!-- Notifications will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mock data
+        const mentees = [
+            { id: 1, name: 'Sarah Johnson', avatar: 'SJ', email: 'sarah@email.com', progress: 85, status: 'Active', joined: '3 months ago' },
+            { id: 2, name: 'Alex Chen', avatar: 'AC', email: 'alex@email.com', progress: 72, status: 'Active', joined: '2 months ago' },
+            { id: 3, name: 'Maria Garcia', avatar: 'MG', email: 'maria@email.com', progress: 94, status: 'Completed', joined: '6 months ago' }
+        ];
+
+        const messages = [
+            { from: 'Sarah Johnson', avatar: 'SJ', message: 'Thank you for the feedback on my project! I really appreciate all the guidance.', time: '2 hours ago', unread: true },
+            { from: 'Alex Chen', avatar: 'AC', message: 'Could we schedule our next session? I have some questions about the new framework.', time: '5 hours ago', unread: true },
+            { from: 'Maria Garcia', avatar: 'MG', message: 'I completed the assignment and uploaded it to the portal.', time: '1 day ago', unread: false }
+        ];
+
+        const resources = [
+            { name: 'Career Development Guide.pdf', size: '2.5 MB', date: '2 days ago', type: 'pdf' },
+            { name: 'Leadership Best Practices.docx', size: '1.2 MB', date: '1 week ago', type: 'doc' },
+            { name: 'Industry Trends Report.xlsx', size: '3.1 MB', date: '2 weeks ago', type: 'excel' },
+            { name: 'Interview Preparation Checklist.pdf', size: '850 KB', date: '3 weeks ago', type: 'pdf' },
+            { name: 'Coding Standards Guide.docx', size: '1.8 MB', date: '1 month ago', type: 'doc' }
+        ];
+
+        let notifications = [
+            { text: 'Sarah Johnson completed her milestone', time: '1 hour ago', unread: true },
+            { text: 'New mentee match request from Alex Chen', time: '3 hours ago', unread: true },
+            { text: 'Monthly mentorship report is ready for review', time: '1 day ago', unread: false },
+            { text: 'System maintenance scheduled for this weekend', time: '2 days ago', unread: false },
+            { text: 'New resources added to the library', time: '1 week ago', unread: false }
+        ];
+
+        function showSection(event, sectionName) {
+            event.preventDefault();
+            
+            // Hide all sections
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.classList.add('d-none');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('d-none');
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Populate content based on section
+            switch(sectionName) {
+                case 'mentees':
+                    populateMentees();
+                    break;
+                case 'messages':
+                    populateMessages();
+                    break;
+                case 'resources':
+                    populateResources();
+                    break;
+                case 'notifications':
+                    populateNotifications();
+                    break;
+            }
+        }
+
+        function populateMentees() {
+            const menteesList = document.getElementById('mentees-list');
+            menteesList.innerHTML = mentees.map(mentee => `
+                <div class="mentee-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="profile-avatar me-3">${mentee.avatar}</div>
+                            <div>
+                                <h5 class="text-dark mb-1">${mentee.name}</h5>
+                                <p class="text-muted mb-1">${mentee.email}</p>
+                                <small class="text-muted">Joined ${mentee.joined}</small>
+                                <div class="d-flex align-items-center mt-2">
+                                    <div class="progress me-2" style="width: 120px; height: 8px;">
+                                        <div class="progress-bar" style="width: ${mentee.progress}%;"></div>
+                                    </div>
+                                    <small class="fw-semibold">${mentee.progress}% Complete</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge ${mentee.status === 'Active' ? 'bg-success' : 'bg-primary'} px-3 py-2">${mentee.status}</span>
+                            <button class="btn btn-outline-primary btn-sm" onclick="viewMentee(${mentee.id})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="messageMentee('${mentee.name}')">
+                                <i class="fas fa-comment"></i> Message
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateMessages() {
+            const messagesList = document.getElementById('messages-list');
+            messagesList.innerHTML = messages.map(message => `
+                <div class="message-item ${message.unread ? 'border-start border-4 border-success' : ''}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex align-items-start">
+                            <div class="profile-avatar me-3" style="width: 45px; height: 45px; font-size: 1.1rem;">${message.avatar}</div>
+                            <div>
+                                <h6 class="text-dark mb-1">${message.from}</h6>
+                                <p class="text-muted mb-2">${message.message}</p>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm">Reply</button>
+                                    <button class="btn btn-outline-secondary btn-sm">Archive</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">${message.time}</small>
+                            ${message.unread ? '<div class="bg-success rounded-circle mt-1" style="width: 8px; height: 8px; margin-left: auto;"></div>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateResources() {
+            const resourcesList = document.getElementById('resources-list');
+            resourcesList.innerHTML = resources.map(resource => `
+                <div class="message-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon me-3" style="width: 45px; height: 45px;">
+                                <i class="fas fa-file-${resource.type === 'pdf' ? 'pdf' : resource.type === 'doc' ? 'word' : 'excel'}"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-dark mb-1">${resource.name}</h6>
+                                <small class="text-muted">${resource.size} • Uploaded ${resource.date}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="downloadResource('${resource.name}')">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="shareResource('${resource.name}')">
+                                <i class="fas fa-share"></i> Share
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteResource('${resource.name}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateNotifications() {
+            const notificationsList = document.getElementById('notifications-list');
+            notificationsList.innerHTML = notifications.map((notification, index) => `
+                <div class="notification-item ${notification.unread ? 'unread' : ''}" data-index="${index}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex align-items-start">
+                            <div class="stat-icon me-3" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div>
+                                <p class="text-dark mb-1">${notification.text}</p>
+                                <small class="text-muted">${notification.time}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            ${notification.unread ? '<div class="bg-success rounded-circle" style="width: 8px; height: 8px;"></div>' : ''}
+                            <button class="btn btn-outline-secondary btn-sm" onclick="dismissNotification(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Interactive functions
+        function viewMentee(menteeId) {
+            const mentee = mentees.find(m => m.id === menteeId);
+            alert(`Viewing details for ${mentee.name}\n\nThis would open a detailed view with:\n• Progress tracking\n• Session history\n• Goals and milestones\n• Performance metrics`);
+        }
+
+        function messageMentee(menteeName) {
+            alert(`Opening message composer for ${menteeName}\n\nThis would open a messaging interface to send a direct message.`);
+        }
+
+        function downloadResource(resourceName) {
+            alert(`Downloading: ${resourceName}\n\nIn a real application, this would start the download process.`);
+        }
+
+        function shareResource(resourceName) {
+            alert(`Sharing: ${resourceName}\n\nThis would open a sharing dialog to send the resource to mentees or other mentors.`);
+        }
+
+        function deleteResource(resourceName) {
+            if (confirm(`Are you sure you want to delete "${resourceName}"?`)) {
+                alert(`${resourceName} has been deleted.`);
+                // In a real app, you would remove the resource and refresh the list
+            }
+        }
+
+        function dismissNotification(index) {
+            notifications.splice(index, 1);
+            populateNotifications();
+        }
+
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                notification.unread = false;
+            });
+            populateNotifications();
+            alert('All notifications marked as read!');
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add animation delays for staggered effect
+            const elements = document.querySelectorAll('.animate-in');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Initialize with overview section
+            populateNotifications();
+        });
+
+        // Add some interactive hover effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for stat cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const label = this.querySelector('.stat-label').textContent;
+                    alert(`Viewing detailed analytics for: ${label}\n\nThis would open a detailed report with charts and metrics.`);
+                });
+                
+                // Add cursor pointer
+                card.style.cursor = 'pointer';
+            });
+
+            // Add smooth scrolling for better UX
+            document.documentElement.style.scrollBehavior = 'smooth';
+        });
+    </script>
+</body>
+</html>
