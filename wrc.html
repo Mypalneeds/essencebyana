@@ -1,0 +1,1132 @@
+<?php
+// index.php - Landing Page
+require_once 'config.php';
+
+// Redirect if already logged in
+if (is_logged_in()) {
+    $role = get_current_user_role();
+    switch ($role) {
+        case 'admin':
+            redirect('admin_dashboard.php');
+            break;
+        case 'mentor':
+            redirect('mentor_dashboard.php');
+            break;
+        case 'mentee':
+            redirect('mentee_dashboard.php');
+            break;
+    }
+}
+
+// Get statistics for landing page
+try {
+    $stmt = $db->query("SELECT COUNT(*) FROM users WHERE role = 'mentor' AND status = 'active'");
+    $mentor_count = $stmt->fetchColumn();
+    
+    $stmt = $db->query("SELECT COUNT(*) FROM users WHERE role = 'mentee' AND status = 'active'");
+    $mentee_count = $stmt->fetchColumn();
+    
+    $stmt = $db->query("SELECT COUNT(*) FROM mentorships WHERE status = 'active'");
+    $active_mentorships = $stmt->fetchColumn();
+    
+    $stmt = $db->query("SELECT COUNT(*) FROM sessions WHERE status = 'completed'");
+    $completed_sessions = $stmt->fetchColumn();
+} catch(PDOException $e) {
+    $mentor_count = 0;
+    $mentee_count = 0;
+    $active_mentorships = 0;
+    $completed_sessions = 0;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo SITE_NAME; ?> - Empowering Spiritual Growth Through Mentorship</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #0f3460;
+            --gold-color: #fbbf24;
+            --text-primary: #2c3e50;
+            --text-secondary: #64748b;
+            --light-bg: #f8fafc;
+            --success-color: #059669;
+        }
+
+        * {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .navbar.scrolled {
+            padding: 15px 0;
+            box-shadow: 0 2px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 900;
+            font-size: 1.8rem;
+            color: var(--primary-color) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-brand i {
+            color: var(--gold-color);
+            font-size: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-primary) !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 20px !important;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: var(--gold-color);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after {
+            width: 50%;
+        }
+
+        .btn-login {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-register {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: all 0.3s;
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-register:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(26, 26, 46, 0.3);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            padding: 100px 0 80px;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+            animation: float 20s infinite;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -150px;
+            left: -150px;
+            animation: float 15s infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 25px;
+            line-height: 1.2;
+            letter-spacing: -2px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-primary {
+            background: var(--gold-color);
+            color: var(--primary-color);
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border: none;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-hero-primary:hover {
+           
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4);
+            background: #fcd34d;
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            color: white;
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 2px solid white;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-hero-secondary:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .hero-image {
+            position: relative;
+            animation: heroFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes heroFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-image img {
+            width: 100%;
+            filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .stat-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 100px 0;
+            background: var(--light-bg);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 70px;
+        }
+
+        .section-title h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .section-title p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            height: 100%;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border-color: var(--gold-color);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 100px 0;
+            background: white;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold-color), #fcd34d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin: 0 auto 25px;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+        }
+
+        .step-card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .step-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+        }
+
+        .cta-content {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-content h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .cta-content p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer h5 {
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold-color);
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+        }
+
+        .social-links a:hover {
+            background: var(--gold-color);
+            color: var(--primary-color);
+            transform: translateY(-5px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 50px;
+            padding-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .section-title h2 {
+                font-size: 2.5rem;
+            }
+
+            .cta-content h2 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+            }
+
+            .btn-hero-primary,
+            .btn-hero-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .section-title h2 {
+                font-size: 2rem;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+
+            .cta-content h2 {
+                font-size: 2rem;
+            }
+
+            .cta-content p {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--gold-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 999;
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.6);
+        }
+
+        .scroll-top.show {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top" id="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">
+                <i class="fas fa-hands-praying"></i>
+                WRC Discipleship
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-login" href="login.php">Login</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-register" href="register.php">Get Started</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <div class="hero-content">
+                        <h1 class="hero-title">Transform Lives Through Mentorship</h1>
+                        <p class="hero-subtitle">
+                            Connect, grow, and flourish in your spiritual journey with personalized mentorship and a supportive community.
+                        </p>
+                        <div class="hero-cta">
+                            <a href="register.php" class="btn-hero-primary">
+                                Start Your Journey
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <a href="#how-it-works" class="btn-hero-secondary">
+                                <i class="fas fa-play-circle"></i>
+                                Learn More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+                    <div class="hero-image">
+                        <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgba(251,191,36,0.3);stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:rgba(251,191,36,0.1);stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="250" cy="250" r="200" fill="url(#grad1)"/>
+                            <circle cx="250" cy="250" r="150" fill="rgba(255,255,255,0.1)"/>
+                            <g transform="translate(250, 250)">
+                                <circle cx="0" cy="-100" r="40" fill="white" opacity="0.9"/>
+                                <circle cx="-87" cy="-50" r="40" fill="white" opacity="0.9"/>
+                                <circle cx="-87" cy="50" r="40" fill="white" opacity="0.9"/>
+                                <circle cx="0" cy="100" r="40" fill="white" opacity="0.9"/>
+                                <circle cx="87" cy="50" r="40" fill="white" opacity="0.9"/>
+                                <circle cx="87" cy="-50" r="40" fill="white" opacity="0.9"/>
+                                <circle cx="0" cy="0" r="50" fill="#fbbf24"/>
+                                <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" font-size="40" fill="#1a1a2e" font-weight="bold">
+                                    <tspan x="0" dy="10">🙏</tspan>
+                                </text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6" data-aos="fade-up">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $mentor_count + $mentee_count; ?>+</div>
+                        <div class="stat-label">Active Members</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $mentor_count; ?>+</div>
+                        <div class="stat-label">Experienced Mentors</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $active_mentorships; ?>+</div>
+                        <div class="stat-label">Active Mentorships</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-number"><?php echo $completed_sessions; ?>+</div>
+                        <div class="stat-label">Sessions Completed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Powerful Features for Growth</h2>
+                <p>Everything you need to thrive in your spiritual discipleship journey</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <h3>1-on-1 Mentorship</h3>
+                        <p>Get paired with experienced mentors who guide you through personalized spiritual growth plans tailored to your journey.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h3>Goal Tracking</h3>
+                        <p>Set spiritual goals, track your progress, and celebrate milestones with comprehensive task management tools.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h3>Digital Journal</h3>
+                        <p>Document your spiritual reflections, insights, and testimonies in a secure, private digital journal.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-praying-hands"></i>
+                        </div>
+                        <h3>Prayer Wall</h3>
+                        <p>Share prayer requests and intercede for others in a supportive community that prays together.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <h3>Resource Library</h3>
+                        <p>Access curated spiritual resources, teachings, and materials to deepen your understanding and faith.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h3>Session Scheduling</h3>
+                        <p>Easily schedule and manage mentorship sessions with integrated calendar and reminder systems.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>How It Works</h2>
+                <p>Start your spiritual growth journey in three simple steps</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3>Create Your Profile</h3>
+                        <p>Sign up and complete your profile with your spiritual goals, interests, and what you're looking for in a mentorship relationship.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Get Matched</h3>
+                        <p>Our system pairs you with a compatible mentor based on your profile, goals, and availability for the best mentorship experience.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Start Growing</h3>
+                        <p>Begin your journey with regular sessions, goal tracking, prayer support, and access to resources that accelerate your spiritual growth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="features-section" id="testimonials">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Lives Transformed</h2>
+                <p>Hear from our community members about their journey</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
+                        <div class="mb-3">
+                            <i class="fas fa-quote-left" style="font-size: 2rem; color: var(--gold-color);"></i>
+                        </div>
+                        <p style="font-style: italic; color: var(--text-primary); margin-bottom: 20px;">
+                            "This platform has completely transformed my spiritual walk. My mentor has been instrumental in helping me develop consistent prayer habits and understand Scripture better."
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 50px; height: 50px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                JD
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary-color);">John Doe</strong>
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">Mentee, 6 months</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
+                        <div class="mb-3">
+                            <i class="fas fa-quote-left" style="font-size: 2rem; color: var(--gold-color);"></i>
+                        </div>
+                        <p style="font-style: italic; color: var(--text-primary); margin-bottom: 20px;">
+                            "Being a mentor here has been incredibly rewarding. The platform makes it easy to stay connected with my mentees and track their spiritual growth journey."
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 50px; height: 50px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                SM
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary-color);">Sarah Mitchell</strong>
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">Mentor, 2 years</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
+                        <div class="mb-3">
+                            <i class="fas fa-quote-left" style="font-size: 2rem; color: var(--gold-color);"></i>
+                        </div>
+                        <p style="font-style: italic; color: var(--text-primary); margin-bottom: 20px;">
+                            "The prayer wall feature has created such a strong sense of community. It's amazing to see how we all support each other through prayer and encouragement."
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 50px; height: 50px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                MJ
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary-color);">Mark Johnson</strong>
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">Mentee, 1 year</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="about">
+        <div class="container">
+            <div class="cta-content" data-aos="zoom-in">
+                <h2>Ready to Begin Your Journey?</h2>
+                <p>Join thousands of believers growing together through mentorship</p>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 40px;">
+                    <a href="register.php" class="btn-hero-primary">
+                        Join as Mentee
+                        <i class="fas fa-user-graduate"></i>
+                    </a>
+                    <a href="register.php" class="btn-hero-primary" style="background: white; color: var(--primary-color);">
+                        Become a Mentor
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5>
+                        <i class="fas fa-hands-praying me-2" style="color: var(--gold-color);"></i>
+                        WRC Discipleship
+                    </h5>
+                    <p style="color: rgba(255, 255, 255, 0.7); line-height: 1.8;">
+                        Empowering spiritual growth through meaningful mentorship relationships and community support.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#testimonials">Testimonials</a></li>
+                        <li><a href="register.php">Get Started</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Resources</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Guidelines</a></li>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Legal</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">Disclaimer</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Contact</h5>
+                    <ul class="footer-links">
+                        <li><a href="mailto:info@wrcdiscipleship.com"><i class="fas fa-envelope me-2"></i>Email Us</a></li>
+                        <li><a href="tel:+1234567890"><i class="fas fa-phone me-2"></i>Call Us</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt me-2"></i>Find Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <?php echo date('Y'); ?> WRC Discipleship. All rights reserved. Built with <i class="fas fa-heart" style="color: var(--gold-color);"></i> for spiritual growth.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll to top button
+        const scrollTop = document.getElementById('scrollTop');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                scrollTop.classList.add('show');
+            } else {
+                scrollTop.classList.remove('show');
+            }
+        });
+
+        scrollTop.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offset = 80; // navbar height
+                    const targetPosition = target.offsetTop - offset;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    const navbarCollapse = document.querySelector('.navbar-collapse');
+                    if (navbarCollapse.classList.contains('show')) {
+                        const bsCollapse = new bootstrap.Collapse(navbarCollapse);
+                        bsCollapse.hide();
+                    }
+                }
+            });
+        });
+
+        // Add animation to stats on scroll
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statNumber = entry.target.querySelector('.stat-number');
+                    if (statNumber && !statNumber.classList.contains('animated')) {
+                        statNumber.classList.add('animated');
+                        const finalNumber = parseInt(statNumber.textContent);
+                        let currentNumber = 0;
+                        const increment = finalNumber / 50;
+                        const timer = setInterval(() => {
+                            currentNumber += increment;
+                            if (currentNumber >= finalNumber) {
+                                statNumber.textContent = finalNumber + '+';
+                                clearInterval(timer);
+                            } else {
+                                statNumber.textContent = Math.floor(currentNumber) + '+';
+                            }
+                        }, 30);
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stat-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.hero-image');
+            if (parallax) {
+                parallax.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
+        });
+
+        // Add hover effect to feature cards
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Loading animation
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s';
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
